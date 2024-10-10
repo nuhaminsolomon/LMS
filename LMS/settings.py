@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-z38cv7bf@)44&d^=1*78)n!1kyti#qkhod^ip)s1ie=2+tbk_p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['NuhaminSolomon.pythonanywhere.com']
+ALLOWED_HOSTS = ['NuhaminSolomon.pythonanywhere.com', "localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -119,7 +119,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Adjust the path as needed
+STATICFILES_DIRS = [BASE_DIR / 'static']  # Optional: Additional static file directories
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -130,3 +131,5 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10, 
 }
+
+
