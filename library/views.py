@@ -9,6 +9,8 @@ from .models import Book, Transaction
 from .serializers import BookSerializer, TransactionSerializer
 from rest_framework.pagination import PageNumberPagination
 from django_filters import rest_framework as filters
+from rest_framework.decorators import action
+
 
 class CustomPagination(PageNumberPagination):
     page_size = 2
@@ -18,23 +20,39 @@ class CustomPagination(PageNumberPagination):
 import django_filters
 from .models import Book
 
-class BookFilter(django_filters.FilterSet):
-    title = django_filters.CharFilter(lookup_expr='icontains')
-    author = django_filters.CharFilter(lookup_expr='icontains')
-    isbn = django_filters.CharFilter(lookup_expr='exact')  # Exact match for ISBN
-    published_date = django_filters.DateFilter()
-    copies_available = django_filters.NumberFilter()  # For filtering by number of copies
+class BookFilter(filters.FilterSet):
+    title = filters.CharFilter(lookup_expr='icontains')
+    author = filters.CharFilter(lookup_expr='icontains')
+    isbn = filters.CharFilter(lookup_expr='exact')
 
     class Meta:
         model = Book
-        fields = ['title', 'author', 'isbn', 'published_date', 'copies_available']
+        fields = ['title', 'author', 'isbn']
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     pagination_class = CustomPagination
-    # filter_backends = (filters.DjangoFilterBackend,)
-    # filterset_class = BookFilter
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = BookFilter
+    
+    @action(detail=False, methods=['get'], url_path='available')
+    def list_available_books(self, request):
+        # Filter books where copies_available is greater than 0
+        available_books = Book.objects.filter(copies_available__gt=0)
+
+        # Apply filters if they are present in the request
+        filtered_books = self.filter_queryset(available_books)
+
+        # Paginate the filtered available books
+        page = self.paginate_queryset(filtered_books)
+        if page is not None:
+            serializer = BookSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        # If no pagination was applied, return all available books
+        serializer = BookSerializer(filtered_books, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 
 class TransactionViewSet(viewsets.ViewSet):
@@ -70,6 +88,11 @@ class TransactionViewSet(viewsets.ViewSet):
     def my_history(self, request):
         res=Transaction.objects.filter(user=request.user)
         Serializer = TransactionSerializer(res,many=True )
+        return Response(Serializer.data,status=status.HTTP_200_OK)
+    
+    def list_available_books(self, request):
+        res=Book.objects.filter(copies_available__gt = 0)
+        Serializer = BookSerializer(res,many=True )
         return Response(Serializer.data,status=status.HTTP_200_OK)
     
 

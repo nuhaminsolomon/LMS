@@ -11,4 +11,5 @@ urlpatterns = [
     path('checkout/<int:pk>/', TransactionViewSet.as_view({'post': 'checkout'}), name='checkout'),
     path('return/<int:pk>/', TransactionViewSet.as_view({'post': 'return_book'}), name='return_book'),
     path('my_history', TransactionViewSet.as_view({'get': 'my_history'}),name='my_history'),
+    path('list_available_books', TransactionViewSet.as_view({'get': 'list_available_books'}),name='list_available_books'),
 ]
